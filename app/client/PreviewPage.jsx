@@ -288,11 +288,12 @@ export default class PreviewPage extends React.Component {
       }, () => {
         if (refreshContent) {
           try {
+            const mermaidTheme = this.state.theme === 'dark' ? 'dark' : 'default'
             // eslint-disable-next-line
-            mermaid.initialize({ theme: (this.state.theme || 'light'), ...(options.maid || {}) })
+            mermaid.initialize({ startOnLoad: false, theme: mermaidTheme, securityLevel: 'loose', ...(options.maid || {}) })
             // eslint-disable-next-line
             mermaid.init(undefined, document.querySelectorAll('.mermaid'))
-          } catch (e) { }
+          } catch (e) { console.error('mermaid error:', e) }
 
           chart.render()
           renderDiagram()
