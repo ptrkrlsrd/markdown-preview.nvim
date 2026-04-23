@@ -49,7 +49,7 @@ Or install with [dein](https://github.com/Shougo/dein.vim):
 
 ```vim
 call dein#add('iamcco/markdown-preview.nvim', {'on_ft': ['markdown', 'pandoc.markdown', 'rmd'],
-					\ 'build': 'sh -c "cd app && npx --yes yarn install"' })
+     \ 'build': 'sh -c "cd app && npx --yes yarn install"' })
 ```
 
 Or with [minpac](https://github.com/k-takata/minpac):
@@ -61,15 +61,19 @@ call minpac#add('iamcco/markdown-preview.nvim', {'do': 'packloadall! | call mkdp
 Or with [Vundle](https://github.com/vundlevim/vundle.vim):
 
 Place this in your `.vimrc` or `init.vim`,
+
 ```vim
 Plugin 'iamcco/markdown-preview.nvim'
 ```
+
 ... then run the following in Vim (to complete the `Plugin` installation):
+
 ```vim
 :source %
 :PluginInstall
 :call mkdp#util#install()
 ```
+
 Or with [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 Add this in your `init.lua or plugins.lua`
@@ -95,6 +99,7 @@ Add this in your `init.lua or plugins.lua`
 },
 
 ```
+
 Or with [Packer.nvim](https://github.com/wbthomason/packer.nvim):
 
 Add this in your `init.lua or plugins.lua`
@@ -128,7 +133,7 @@ npx --yes yarn build
 Please make sure that you have installed `node.js` and `yarn`.
 Open `nvim` and run `:PackerInstall` to make it workable
 
-### MarkdownPreview Config:
+### MarkdownPreview Config
 
 ```vim
 " set to 1, nvim will open the preview window after entering the Markdown buffer
@@ -281,7 +286,7 @@ Commands:
 
 **Image Size:**
 
-``` markdown
+```markdown
 ![image](https://user-images.githubusercontent.com/5492542/47603494-28e90000-da1f-11e8-9079-30646e551e7a.gif =400x200)
 ```
 
@@ -332,6 +337,7 @@ Or
     China-->Andrew: How are you?
     Andrew->>China: I am good thanks!
     ```
+
 **Flowchart:**
 
     ``` flowchart
@@ -421,40 +427,44 @@ Or
 
 ### FAQ
 
-#### *Why is the synchronised scrolling lagging?*
+#### _Why is the synchronised scrolling lagging?_
 
 Set `updatetime` to a small number, for instance: `set updatetime=100`
 
-*WSL 2 issue*: Can not open browser when using WSL 2 with terminal Vim.
+_WSL 2 issue_: Can not open browser when using WSL 2 with terminal Vim.
 
 > if you are using Ubuntu you can install xdg-utils using `sudo apt-get install -y xdg-utils`
 > checkout [issue 199](https://github.com/iamcco/markdown-preview.nvim/issues/199) for more detail.
 
-#### *How can I change the dark/light theme?*
+#### _How can I change the dark/light theme?_
 
 The default theme is based on your system preferences.
 There is a button hidden in the header to change the theme. Place your mouse over the header to reveal it.
 
-#### *How can I pass CLI options to the browser, like opening in a new window?*
+#### _How can I pass CLI options to the browser, like opening in a new window?_
 
 Answer: Add the following to your Neovim init script:
 
-*Linux*
+_Linux_
+
 ```vimscript
   function OpenMarkdownPreview (url)
     execute "silent ! firefox --new-window " . a:url
   endfunction
   let g:mkdp_browserfunc = 'OpenMarkdownPreview'
 ```
+
 Replace `firefox` with `chrome` if you prefer. Both browsers recognize the `--new-window` option.
 
-*macOS*
+_macOS_
+
 ```vimscript
   function OpenMarkdownPreview (url)
     execute "silent ! open -a Firefox -n --args --new-window " . a:url
   endfunction
   let g:mkdp_browserfunc = 'OpenMarkdownPreview'
 ```
+
 Replace `Firefox` with `Google\ Chrome` or `Brave\ Browser` if you prefer. They all recognize the `--new-window` option.
 
 ### About Vim Support
