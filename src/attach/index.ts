@@ -1,7 +1,5 @@
 import { attach, Attach, NeovimClient } from '@chemzqm/neovim'
 
-const logger = require('../util/logger')('attach') // tslint:disable-line
-
 interface IApp {
   refreshPage: ((
     param: {
@@ -88,7 +86,7 @@ export default function(options: Attach): IPlugin {
       await nvim.setVar('mkdp_node_channel_id', channelId)
     })
     .catch(e => {
-      logger.error('channelId: ', e)
+      console.error('channelId: ', e)
     })
 
   return {
