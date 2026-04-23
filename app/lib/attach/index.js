@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
-const neovim_1 = require("@chemzqm/neovim");
-const logger = require('../util/logger')('attach'); // tslint:disable-line
+const neovim_1 = require("neovim");
 let app;
 function default_1(options) {
     const nvim = (0, neovim_1.attach)(options);
@@ -62,7 +61,7 @@ function default_1(options) {
         yield nvim.setVar('mkdp_node_channel_id', channelId);
     }))
         .catch(e => {
-        logger.error('channelId: ', e);
+        console.error('channelId: ', e);
     });
     return {
         nvim,
