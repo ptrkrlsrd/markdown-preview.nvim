@@ -7,7 +7,7 @@
 		exports["markdown-it-imsize.js"] = factory();
 	else
 		root["markdown-it-imsize.js"] = factory();
-})(this, function() {
+})(typeof window !== 'undefined' ? window : globalThis, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};

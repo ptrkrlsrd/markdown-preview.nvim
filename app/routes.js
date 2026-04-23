@@ -2,6 +2,44 @@ const fs = require('fs')
 const path = require('path')
 const logger = require('./lib/util/logger')('app/routes')
 
+function contentTypeForPath (fpath) {
+  switch (path.extname(fpath).toLowerCase()) {
+    case '.js':
+    case '.mjs':
+    case '.cjs':
+      return 'application/javascript; charset=utf-8'
+    case '.css':
+      return 'text/css; charset=utf-8'
+    case '.html':
+    case '.htm':
+      return 'text/html; charset=utf-8'
+    case '.json':
+      return 'application/json; charset=utf-8'
+    case '.svg':
+      return 'image/svg+xml'
+    case '.ico':
+      return 'image/x-icon'
+    case '.woff':
+      return 'font/woff'
+    case '.woff2':
+      return 'font/woff2'
+    case '.ttf':
+      return 'font/ttf'
+    case '.map':
+      return 'application/json'
+    default:
+      return ''
+  }
+}
+
+function sendFile (res, fpath) {
+  const ct = contentTypeForPath(fpath)
+  if (ct) {
+    res.setHeader('Content-Type', ct)
+  }
+  return fs.createReadStream(fpath).pipe(res)
+}
+
 const routes = []
 
 const use = function (route) {
@@ -11,15 +49,19 @@ const use = function (route) {
 // /page/:number
 use((req, res, next) => {
   if (/\/page\/\d+/.test(req.asPath)) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
     return fs.createReadStream('./out/index.html').pipe(res)
   }
   next()
 })
 
-// /_next/path
+// /assets/* (Vite build output)
 use((req, res, next) => {
-  if (/\/_next/.test(req.asPath)) {
-    return fs.createReadStream(path.join('./out', req.asPath)).pipe(res)
+  if (req.asPath.startsWith('/assets/')) {
+    const fpath = path.join('./out', req.asPath)
+    if (fs.existsSync(fpath) && !fs.statSync(fpath).isDirectory()) {
+      return sendFile(res, fpath)
+    }
   }
   next()
 })
@@ -30,10 +72,12 @@ use((req, res, next) => {
   try {
     if (req.mkcss && req.asPath === '/_static/markdown.css') {
       if (fs.existsSync(req.mkcss)) {
+        res.setHeader('Content-Type', 'text/css; charset=utf-8')
         return fs.createReadStream(req.mkcss).pipe(res)
       }
     } else if (req.hicss && req.asPath === '/_static/highlight.css') {
       if (fs.existsSync(req.hicss)) {
+        res.setHeader('Content-Type', 'text/css; charset=utf-8')
         return fs.createReadStream(req.hicss).pipe(res)
       }
     }
@@ -48,7 +92,7 @@ use((req, res, next) => {
   if (/\/_static/.test(req.asPath)) {
     const fpath = path.join('./', req.asPath)
     if (fs.existsSync(fpath)) {
-      return fs.createReadStream(fpath).pipe(res)
+      return sendFile(res, fpath)
     } else {
       logger.error('No such file:', req.asPath, req.mkcss, req.hicss)
     }
@@ -123,6 +167,7 @@ use(async (req, res, next) => {
 // 404
 use((req, res) => {
   res.statusCode = 404
+  res.setHeader('Content-Type', 'text/html; charset=utf-8')
   return fs.createReadStream(path.join('./out', '404.html')).pipe(res)
 })
 

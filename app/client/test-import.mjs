@@ -1,0 +1,1 @@
+import x from './markdown-it-imsize.js'; console.log(typeof x, x && x.name);

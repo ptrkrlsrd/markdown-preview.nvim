@@ -1,4 +1,4 @@
-const plantumlEncoder = require("plantuml-encoder");
+import plantumlEncoder from 'plantuml-encoder'
 
 function generateSourceDefault (umlCode, pluginOptions) {
   var imageFormat = pluginOptions.imageFormat || 'img'

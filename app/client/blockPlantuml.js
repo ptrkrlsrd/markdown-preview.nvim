@@ -1,8 +1,8 @@
 // Process block-level uml diagrams
 
-const plantumlEncoder = require("plantuml-encoder");
+import plantumlEncoder from 'plantuml-encoder'
 
-module.exports = function umlPlugin(md, options) {
+export default function umlPlugin(md, options) {
 
   function generateSourceDefault(umlCode, pluginOptions) {
     var imageFormat = pluginOptions.imageFormat || 'img';

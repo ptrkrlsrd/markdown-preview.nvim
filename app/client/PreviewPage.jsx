@@ -1,5 +1,4 @@
 import React from 'react'
-import Head from 'next/head'
 import io from 'socket.io-client'
 import MarkdownIt from 'markdown-it'
 import hljs from 'highlight.js'
@@ -22,7 +21,7 @@ import blockUml from './blockPlantuml'
 import codeUml from './plantuml'
 import scrollToLine from './scroll'
 import { meta } from './meta';
-import markdownImSize from './markdown-it-imsize'
+import markdownImSize from './imsize-runtime'
 import { escape} from './utils';
 
 const anchorSymbol = '<svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg>'
@@ -117,10 +116,7 @@ export default class PreviewPage extends React.Component {
     }
     this.bufnr = bufnr;
 
-    // Close the previous socket
     const tmpSocket = window.socket
-
-    window.history.replaceState(null, '', `/${bufnr}`)
 
     const socket = io({
       query: {
@@ -149,6 +145,13 @@ export default class PreviewPage extends React.Component {
 
   componentDidMount() {
     this.startSocket(parseFloat(window.location.pathname.split('/')[2]))
+  }
+
+  componentDidUpdate(_prevProps, prevState) {
+    if (prevState.pageTitle !== this.state.pageTitle || prevState.name !== this.state.name) {
+      const { pageTitle, name } = this.state
+      document.title = (pageTitle || '').replace(/\$\{name\}/, name)
+    }
   }
 
   onConnect() {
@@ -321,7 +324,6 @@ export default class PreviewPage extends React.Component {
       theme,
       content,
       name,
-      pageTitle,
       themeModeIsVisible,
       contentEditable,
       disableFilename,
@@ -329,27 +331,6 @@ export default class PreviewPage extends React.Component {
 
     return (
       <React.Fragment>
-        <Head>
-          <title>{(pageTitle || '').replace(/\$\{name\}/, name)}</title>
-          <link rel="shortcut icon" type="image/ico" href="/_static/favicon.ico" />
-          <link rel="stylesheet" href="/_static/page.css" />
-          <link rel="stylesheet" href="/_static/markdown.css" />
-          <link rel="stylesheet" href="/_static/highlight.css" />
-          <link rel="stylesheet" href="/_static/katex@0.15.3.css" />
-          <link rel="stylesheet" href="/_static/sequence-diagram-min.css" />
-          <script type="text/javascript" src="/_static/underscore-min.js"></script>
-          <script type="text/javascript" src="/_static/webfont.js"></script>
-          <script type="text/javascript" src="/_static/snap.svg.min.js"></script>
-          <script type="text/javascript" src="/_static/tweenlite.min.js"></script>
-          <script type="text/javascript" src="/_static/mermaid.min.js"></script>
-          <script type="text/javascript" src="/_static/sequence-diagram-min.js"></script>
-          <script type="text/javascript" src="/_static/katex@0.15.3.js"></script>
-          <script type="text/javascript" src="/_static/mhchem.min.js"></script>
-          <script type="text/javascript" src="/_static/raphael@2.3.0.min.js"></script>
-          <script type="text/javascript" src="/_static/flowchart@1.13.0.min.js"></script>
-          <script type="text/javascript" src="/_static/viz.js"></script>
-          <script type="text/javascript" src="/_static/full.render.js"></script>
-        </Head>
         <main data-theme={this.state.theme}>
           <div id="page-ctn" contentEditable={contentEditable ? 'true' : 'false'}>
             { disableFilename == 0 &&
@@ -375,7 +356,7 @@ export default class PreviewPage extends React.Component {
                   {name}
                 </h3>
                 {themeModeIsVisible && (
-                  <label id="toggle-theme" for="theme">
+                  <label id="toggle-theme" htmlFor="theme">
                     <input
                       id="theme"
                       type="checkbox"
