@@ -1,15 +1,53 @@
+let scrollRaf = null
+
+function easeOutCubic (t) {
+  const u = 1 - t
+  return 1 - u * u * u
+}
+
 function scroll (offsetTop) {
-  [document.body, document.documentElement].forEach((ele) => {
-    // eslint-disable-next-line
-    TweenLite.to(
-      ele,
-      0.4,
-      {
-        scrollTop: offsetTop,
-        ease: Power2.easeOut // eslint-disable-line
-      }
-    )
-  })
+  if (scrollRaf !== null) {
+    cancelAnimationFrame(scrollRaf)
+    scrollRaf = null
+  }
+
+  const root = document.documentElement
+  const maxY = Math.max(0, root.scrollHeight - window.innerHeight)
+  let target = offsetTop
+  if (target < 0) {
+    target = 0
+  }
+  if (target > maxY) {
+    target = maxY
+  }
+
+  const startY = window.scrollY
+  if (startY === target) {
+    return
+  }
+
+  const duration = 400
+  const delta = target - startY
+  let t0 = null
+
+  function frame (now) {
+    if (t0 === null) {
+      t0 = now
+    }
+    let u = (now - t0) / duration
+    if (u > 1) {
+      u = 1
+    }
+    const y = startY + delta * easeOutCubic(u)
+    window.scrollTo(0, y)
+    if (u < 1) {
+      scrollRaf = requestAnimationFrame(frame)
+      return
+    }
+    scrollRaf = null
+  }
+
+  scrollRaf = requestAnimationFrame(frame)
 }
 
 function getAttrTag (line) {

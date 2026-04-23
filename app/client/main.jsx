@@ -3,7 +3,6 @@ import './setup-globals.js'
 const DIAGRAM_STACK_SCRIPTS = [
   '/_static/markdown-it-imsize.js',
   '/_static/snap.svg.min.js',
-  '/_static/tweenlite.min.js',
   '/_static/raphael@2.3.0.min.js',
   '/_static/sequence-diagram-min.js',
 ]
