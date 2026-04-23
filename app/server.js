@@ -36,9 +36,12 @@ exports.run = function () {
   const server = http.createServer(async (req, res) => {
     // plugin
     req.plugin = plugin
-    // bufnr
-    req.bufnr = (req.headers.referer || req.url)
-      .replace(/[?#].*$/, '').split('/').pop()
+    const refOrPath = (req.headers.referer || req.url || '')
+      .replace(/[?#].*$/, '')
+      .split('/')
+      .pop()
+    const parsedBuf = Number(refOrPath)
+    req.bufnr = Number.isFinite(parsedBuf) ? String(parsedBuf) : refOrPath
     // request path
     req.asPath = req.url.replace(/[?#].*$/, '')
     req.mkcss = await plugin.nvim.getVar('mkdp_markdown_css')
@@ -63,35 +66,38 @@ exports.run = function () {
     update_clients_active_var();
 
     const buffers = await plugin.nvim.buffers
-    buffers.forEach(async (buffer) => {
-      if (buffer.id === Number(bufnr)) {
-        const winline = await plugin.nvim.call('winline')
-        const currentWindow = await plugin.nvim.window
-        const winheight = await plugin.nvim.call('winheight', currentWindow.id)
-        const cursor = await plugin.nvim.call('getpos', '.')
-        const options = await plugin.nvim.getVar('mkdp_preview_options')
-        const pageTitle = await plugin.nvim.getVar('mkdp_page_title')
-        const theme = await plugin.nvim.getVar('mkdp_theme')
-        const name = await buffer.name
-        const content = await buffer.getLines()
-        const currentBuffer = await plugin.nvim.buffer
-        client.emit('refresh_content', {
-          options,
-          isActive: currentBuffer.id === buffer.id,
-          winline,
-          winheight,
-          cursor,
-          pageTitle,
-          theme,
-          name,
-          content
-        })
+    const bufId = Number(bufnr)
+    for (const buffer of buffers) {
+      if (buffer.id !== bufId) {
+        continue
       }
-    })
+      const winline = await plugin.nvim.call('winline')
+      const currentWindow = await plugin.nvim.window
+      const winheight = await plugin.nvim.call('winheight', currentWindow.id)
+      const cursor = await plugin.nvim.call('getpos', '.')
+      const options = await plugin.nvim.getVar('mkdp_preview_options')
+      const pageTitle = await plugin.nvim.getVar('mkdp_page_title')
+      const theme = await plugin.nvim.getVar('mkdp_theme')
+      const name = await buffer.name
+      const content = await buffer.getLines()
+      const currentBuffer = await plugin.nvim.buffer
+      client.emit('refresh_content', {
+        options,
+        isActive: currentBuffer.id === buffer.id,
+        winline,
+        winheight,
+        cursor,
+        pageTitle,
+        theme,
+        name,
+        content
+      })
+      break
+    }
 
     client.on('disconnect', function () {
       logger.info('disconnect: ', client.id)
-      clients[bufnr] = (clients[bufnr] || []).map(c => c.id !== client.id)
+      clients[bufnr] = (clients[bufnr] || []).filter(c => c.id !== client.id)
       // update vim variable
       update_clients_active_var();
     })

@@ -68,7 +68,7 @@ endfunction
 
 function! mkdp#util#get_platform() abort
   if has('win32') || has('win64')
-    return 'win'
+    return ''
   elseif has('mac') || has('macvim')
     if system('arch') =~? 'arm64'
       return 'macos-arm64'
@@ -139,13 +139,17 @@ function! s:trim(str) abort
 endfunction
 
 function! mkdp#util#install(...)
+  if has('win32') || has('win64')
+    call mkdp#util#echo_messages('Error', 'markdown-preview.nvim: Windows is not supported (macOS/Linux only)')
+    return
+  endif
   let l:version = mkdp#util#pre_build_version()
   let l:info = json_decode(join(readfile(s:mkdp_root_dir . '/package.json'), ''))
   if s:trim(l:version) ==# s:trim(l:info.version)
     return
   endif
   let obj = json_decode(join(readfile(s:package_file)))
-  let cmd = (mkdp#util#get_platform() ==# 'win' ? 'install.cmd' : './install.sh') . ' v'.obj['version']
+  let cmd = './install.sh v' . obj['version']
   if get(a:, '1', v:false) ==# v:true
     execute 'lcd ' . s:mkdp_root_dir . '/app'
     execute '!' . cmd
@@ -168,10 +172,10 @@ function! mkdp#util#install_sync(...)
 endfunction
 
 function! mkdp#util#pre_build_version() abort
-  let l:pre_build = s:pre_build . mkdp#util#get_platform()
-  if has('win32') || has('win64')
-    let l:pre_build .= '.exe'
+  if mkdp#util#get_platform() ==# ''
+    return ''
   endif
+  let l:pre_build = s:pre_build . mkdp#util#get_platform()
   if filereadable(l:pre_build)
     let l:info = system(l:pre_build . ' --version')
     if l:info ==# ''

@@ -1,6 +1,10 @@
 let s:mkdp_root_dir = expand('<sfile>:h:h:h')
 
 function! health#mkdp#check() abort
+  if has('win32') || has('win64')
+    lua vim.health.error('markdown-preview.nvim: Windows is not supported (macOS/Linux only)')
+    return
+  endif
   lua vim.health.info("Platform: " .. vim.fn['mkdp#util#get_platform']())
   lua vim.health.info('Nvim Version: ' .. string.gsub(vim.fn.system('nvim --version'), '^%s*(.-)%s*$', '%1'))
   let l:mkdp_server_script = s:mkdp_root_dir .. '/app/bin/markdown-preview-' .. mkdp#util#get_platform()

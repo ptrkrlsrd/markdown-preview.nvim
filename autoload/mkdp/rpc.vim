@@ -38,6 +38,10 @@ function! s:start_vim_server(cmd) abort
 endfunction
 
 function! mkdp#rpc#start_server() abort
+  if mkdp#util#get_platform() ==# ''
+    call mkdp#util#echo_messages('Error', 'markdown-preview.nvim: Windows is not supported (macOS/Linux only)')
+    return
+  endif
   let l:mkdp_server_script = s:mkdp_root_dir . '/app/bin/markdown-preview-' . mkdp#util#get_platform()
   if executable(l:mkdp_server_script)
     let l:cmd = [l:mkdp_server_script, '--path', s:mkdp_root_dir . '/app/server.js']
@@ -49,13 +53,13 @@ function! mkdp#rpc#start_server() abort
     if s:is_vim
       call s:start_vim_server(l:cmd)
     else
-      let l:nvim_optons = {
+      let l:nvim_options = {
             \ 'rpc': 1,
             \ 'on_stdout': function('s:on_stdout'),
             \ 'on_stderr': function('s:on_stderr'),
             \ 'on_exit': function('s:on_exit')
             \ }
-      let s:mkdp_channel_id = jobstart(l:cmd, l:nvim_optons)
+      let s:mkdp_channel_id = jobstart(l:cmd, l:nvim_options)
     endif
   else
     call mkdp#util#echo_messages('Error', 'Pre build and node is not found')

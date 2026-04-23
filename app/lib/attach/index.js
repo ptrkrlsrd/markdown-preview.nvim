@@ -12,6 +12,9 @@ function default_1(options) {
         const buffers = yield nvim.buffers;
         const buffer = buffers.find(b => b.id === bufnr);
         if (method === 'refresh_content') {
+            if (!buffer) {
+                return;
+            }
             const winline = yield nvim.call('winline');
             const currentWindow = yield nvim.window;
             const winheight = yield nvim.call('winheight', currentWindow.id);

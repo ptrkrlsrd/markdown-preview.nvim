@@ -10,7 +10,7 @@ Preview Markdown in your modern browser with synchronised scrolling and flexible
 
 Main features:
 
-- Cross platform (MacOS/Linux/Windows)
+- macOS and Linux (Windows is not supported)
 - Synchronised scrolling
 - Fast asynchronous updates
 - [KaTeX](https://github.com/Khan/KaTeX) for typesetting of math

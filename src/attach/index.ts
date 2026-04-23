@@ -38,6 +38,9 @@ export default function(options: Attach): IPlugin {
     const buffers = await nvim.buffers
     const buffer = buffers.find(b => b.id === bufnr)
     if (method === 'refresh_content') {
+      if (!buffer) {
+        return
+      }
       const winline = await nvim.call('winline')
       const currentWindow = await nvim.window
       const winheight = await nvim.call('winheight', currentWindow.id)

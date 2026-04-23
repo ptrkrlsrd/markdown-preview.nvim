@@ -2,6 +2,17 @@ const fs = require('fs')
 const path = require('path')
 const logger = require('./lib/util/logger')('app/routes')
 
+function fileUnderRoot (rootDir, relativePath) {
+  const clean = String(relativePath || '').replace(/^\/+/, '').replace(/\0/g, '')
+  const rootNorm = path.resolve(rootDir)
+  const full = path.resolve(rootNorm, clean)
+  const prefix = rootNorm.endsWith(path.sep) ? rootNorm : rootNorm + path.sep
+  if (full !== rootNorm && !full.startsWith(prefix)) {
+    return null
+  }
+  return full
+}
+
 function contentTypeForPath (fpath) {
   switch (path.extname(fpath).toLowerCase()) {
     case '.js':
@@ -50,7 +61,8 @@ const use = function (route) {
 use((req, res, next) => {
   if (/\/page\/\d+/.test(req.asPath)) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
-    return fs.createReadStream('./out/index.html').pipe(res)
+    const indexHtml = path.resolve(process.cwd(), 'out', 'index.html')
+    return fs.createReadStream(indexHtml).pipe(res)
   }
   next()
 })
@@ -58,8 +70,9 @@ use((req, res, next) => {
 // /assets/* (Vite build output)
 use((req, res, next) => {
   if (req.asPath.startsWith('/assets/')) {
-    const fpath = path.join('./out', req.asPath)
-    if (fs.existsSync(fpath) && !fs.statSync(fpath).isDirectory()) {
+    const rel = req.asPath.slice('/assets/'.length)
+    const fpath = fileUnderRoot(path.resolve(process.cwd(), 'out', 'assets'), rel)
+    if (fpath && fs.existsSync(fpath) && !fs.statSync(fpath).isDirectory()) {
       return sendFile(res, fpath)
     }
   }
@@ -90,12 +103,12 @@ use((req, res, next) => {
 // /_static/path
 use((req, res, next) => {
   if (/\/_static/.test(req.asPath)) {
-    const fpath = path.join('./', req.asPath)
-    if (fs.existsSync(fpath)) {
+    const rel = req.asPath.replace(/^\/_static\/?/, '')
+    const fpath = fileUnderRoot(path.resolve(process.cwd(), '_static'), rel)
+    if (fpath && fs.existsSync(fpath) && !fs.statSync(fpath).isDirectory()) {
       return sendFile(res, fpath)
-    } else {
-      logger.error('No such file:', req.asPath, req.mkcss, req.hicss)
     }
+    logger.error('No such file:', req.asPath, req.mkcss, req.hicss)
   }
   next()
 })
@@ -117,23 +130,6 @@ use(async (req, res, next) => {
       }
 
       logger.info('fileDir', fileDir)
-
-      const  mingw_home=process.env.MINGW_HOME;
-      if (mingw_home){
-        if(! fileDir.includes(':')){
-          // fileDir is unix-like:      /Z/x/y/...., 'Z' means Z:
-          // the win-like fileDir should be: Z:\x\y...
-          const cygpath = 'cygpath.exe'
-          const cmd=cygpath+' -w'+' -a '+fileDir ;
-          logger.info('cmd',cmd)
-       
-          const { execSync } = require('node:child_process');
-          const result = execSync(cmd);
-          fileDir=result.toString('utf8').replace('\n','');
-
-          logger.info('New fileDir',fileDir);
-        }  
-      }
 
       let imgPath = decodeURIComponent(decodeURIComponent(req.asPath.replace(reg, '')))
       imgPath = imgPath.replace(/\\ /g, ' ')
@@ -168,7 +164,11 @@ use(async (req, res, next) => {
 use((req, res) => {
   res.statusCode = 404
   res.setHeader('Content-Type', 'text/html; charset=utf-8')
-  return fs.createReadStream(path.join('./out', '404.html')).pipe(res)
+  const notFound = fileUnderRoot(path.resolve(process.cwd(), 'out'), '404.html')
+  if (notFound && fs.existsSync(notFound)) {
+    return fs.createReadStream(notFound).pipe(res)
+  }
+  res.end('Not found')
 })
 
 module.exports = function (req, res, next) {

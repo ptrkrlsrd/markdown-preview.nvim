@@ -10,6 +10,6 @@ if (param === PATH) {
     (0, load_1.default)(argv[3]).run();
 }
 else if (param === VERSION) {
-    // tslint:disable-next-line
-    console.log('0.0.10');
+    const pkg = require('../../../package.json');
+    console.log(pkg.version);
 }

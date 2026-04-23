@@ -297,7 +297,7 @@ export default class PreviewPage extends React.Component {
           chart.render()
           renderDiagram()
           renderFlowchart()
-          renderDot()
+          void renderDot().catch((e) => console.error(e))
         }
         refreshScroll()
       })
