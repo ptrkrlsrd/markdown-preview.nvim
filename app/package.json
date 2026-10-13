@@ -8,7 +8,9 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-"socket.io": "2.4.0",
+    "msgpack-lite": "^0.1.26",
+    "neovim": "^5.4.0",
+    "socket.io": "2.4.0",
     "tslib": "1.9.3"
   }
 }
